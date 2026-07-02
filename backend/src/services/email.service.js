@@ -3,36 +3,22 @@ import { env } from "../config/env.js";
 
 const hasSmtpConfig = () => env.smtp.host && env.smtp.user && env.smtp.pass;
 
-const usingGmailService = () =>
-  Boolean(env.smtp.user && env.smtp.pass && (!env.smtp.host || env.smtp.host === "smtp.gmail.com"));
+const isGmailSmtp = () => !env.smtp.host || env.smtp.host === "smtp.gmail.com";
 
-const logEmailConfig = () => {
-  console.log("Email config:", {
-    EMAIL_USER_exists: env.smtp.emailUserConfigured,
-    EMAIL_PASS_exists: env.smtp.emailPassConfigured,
-    FRONTEND_URL_exists: env.smtp.frontendUrlConfigured,
-    transport: usingGmailService()
-      ? { service: "gmail" }
-      : {
-          host: env.smtp.host || null,
-          port: env.smtp.port,
-          secure: env.smtp.secure
-        }
-  });
-};
-
-const createTransporter = () => {
-  if (usingGmailService()) {
-    return nodemailer.createTransport({
-      service: "gmail",
+const transportConfig = () => {
+  if (isGmailSmtp()) {
+    return {
+      host: "smtp.gmail.com",
+      port: 587,
+      secure: false,
       auth: {
         user: env.smtp.user,
         pass: env.smtp.pass
       }
-    });
+    };
   }
 
-  return nodemailer.createTransport({
+  return {
     host: env.smtp.host,
     port: env.smtp.port,
     secure: env.smtp.secure,
@@ -40,8 +26,24 @@ const createTransporter = () => {
       user: env.smtp.user,
       pass: env.smtp.pass
     }
+  };
+};
+
+const logEmailConfig = () => {
+  const config = transportConfig();
+  console.log("Email config:", {
+    EMAIL_USER_exists: env.smtp.emailUserConfigured,
+    EMAIL_PASS_exists: env.smtp.emailPassConfigured,
+    FRONTEND_URL_exists: env.smtp.frontendUrlConfigured,
+    transport: {
+      host: config.host,
+      port: config.port,
+      secure: config.secure
+    }
   });
 };
+
+const createTransporter = () => nodemailer.createTransport(transportConfig());
 
 export const sendPasswordResetEmail = async ({ to, resetUrl }) => {
   logEmailConfig();
