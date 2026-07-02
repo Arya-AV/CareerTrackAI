@@ -208,6 +208,11 @@ try {
   const afterSignup = await getUserSnapshot();
 
   await evaluate(client, `document.querySelector('[aria-label="Log out"]').click()`);
+  await waitForExpression(client, "Array.from(document.querySelectorAll('button')).some((button) => button.textContent.trim() === 'Log out')");
+  await evaluate(
+    client,
+    `Array.from(document.querySelectorAll('button')).find((button) => button.textContent.trim() === 'Log out').click()`
+  );
   await waitForExpression(client, "location.pathname === '/login'");
 
   const afterLogout = await getUserSnapshot();
