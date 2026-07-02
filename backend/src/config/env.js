@@ -19,7 +19,9 @@ const parseOrigins = (value) =>
     : [];
 
 const buildCorsOrigins = () => {
-  const configuredOrigins = parseOrigins(process.env.CORS_ORIGINS || process.env.CLIENT_URL || "http://localhost:5173");
+  const configuredOrigins = parseOrigins(
+    process.env.CORS_ORIGINS || process.env.FRONTEND_URL || process.env.CLIENT_URL || "http://localhost:5173"
+  );
 
   if (process.env.NODE_ENV === "production") {
     return configuredOrigins;
@@ -28,7 +30,7 @@ const buildCorsOrigins = () => {
   return Array.from(
     new Set([
       ...configuredOrigins,
-      process.env.CLIENT_URL || "http://localhost:5173",
+      process.env.FRONTEND_URL || process.env.CLIENT_URL || "http://localhost:5173",
       "http://localhost:5173",
       "http://127.0.0.1:5173"
     ])
@@ -40,7 +42,7 @@ export const env = {
   isProduction: process.env.NODE_ENV === "production",
   port: Number(process.env.PORT || 5000),
   apiBaseUrl: process.env.API_BASE_URL || "http://localhost:5000",
-  clientUrl: process.env.CLIENT_URL || "http://localhost:5173",
+  clientUrl: process.env.FRONTEND_URL || process.env.CLIENT_URL || "http://localhost:5173",
   corsOrigins: buildCorsOrigins(),
   mongoUri: process.env.MONGODB_URI,
   jwtAccessSecret: process.env.JWT_ACCESS_SECRET,
@@ -54,8 +56,11 @@ export const env = {
     host: process.env.SMTP_HOST,
     port: Number(process.env.SMTP_PORT || 587),
     secure: process.env.SMTP_SECURE === "true",
-    user: process.env.SMTP_USER,
-    pass: process.env.SMTP_PASS,
+    user: process.env.EMAIL_USER || process.env.SMTP_USER,
+    pass: process.env.EMAIL_PASS || process.env.SMTP_PASS,
+    emailUserConfigured: Boolean(process.env.EMAIL_USER),
+    emailPassConfigured: Boolean(process.env.EMAIL_PASS),
+    frontendUrlConfigured: Boolean(process.env.FRONTEND_URL || process.env.CLIENT_URL),
     from: process.env.EMAIL_FROM || "CareerTrack AI <no-reply@careertrack.ai>"
   },
   geminiApiKey: process.env.GEMINI_API_KEY,
