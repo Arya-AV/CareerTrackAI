@@ -1,0 +1,21 @@
+{
+  "name": "careertrack-ai",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "concurrently \"npm run dev --workspace backend\" \"npm run dev --workspace frontend\"",
+    "start": "npm run start --workspace backend",
+    "build": "npm run build --workspace frontend",
+    "install:all": "npm install --workspaces"
+  },
+  "workspaces": [
+    "backend",
+    "frontend"
+  ],
+  "devDependencies": {
+    "concurrently": "^9.1.0"
+  },
+  "dependencies": {
+    "recharts": "^3.9.0"
+  }
+}
