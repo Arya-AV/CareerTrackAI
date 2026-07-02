@@ -46,25 +46,53 @@ const logEmailConfig = () => {
 const createTransporter = () => nodemailer.createTransport(transportConfig());
 
 export const sendPasswordResetEmail = async ({ to, resetUrl }) => {
-  logEmailConfig();
+  console.log("Password reset email config:", {
+    RESEND_API_KEY_exists: env.resend.apiKeyConfigured,
+    FRONTEND_URL_exists: env.resend.frontendUrlConfigured,
+    provider: "resend",
+    from: env.resend.from
+  });
 
-  if (!hasSmtpConfig()) {
+  if (!env.resend.apiKey) {
     if (!env.isProduction) {
-      console.log(`Password reset URL for ${to}: ${resetUrl}`);
+      console.log(`Password reset email skipped in development because RESEND_API_KEY is not configured. Recipient: ${to}`);
       return;
     }
 
-    throw new Error("SMTP is not configured");
+    throw new Error("RESEND_API_KEY is not configured");
   }
 
-  const transporter = createTransporter();
-  await transporter.sendMail({
-    from: env.smtp.from,
-    to,
-    subject: "Reset your CareerTrack AI password",
-    text: `Reset your password using this link: ${resetUrl}`,
-    html: `<p>Reset your password using this link:</p><p><a href="${resetUrl}">${resetUrl}</a></p>`
+  const response = await fetch("https://api.resend.com/emails", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${env.resend.apiKey}`,
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      from: env.resend.from,
+      to,
+      subject: "Reset your CareerTrack AI password",
+      text: `Reset your password using this link: ${resetUrl}`,
+      html: `<p>Reset your password using this link:</p><p><a href="${resetUrl}">Reset your password</a></p>`
+    })
   });
+
+  const payload = await response.json().catch(() => ({}));
+
+  if (!response.ok) {
+    console.error("Password reset email failed via Resend:", {
+      status: response.status,
+      message: payload.message || payload.error || "Unknown Resend error"
+    });
+    throw new Error(payload.message || payload.error || "Resend email request failed");
+  }
+
+  console.log("Password reset email sent via Resend:", {
+    recipient: to,
+    id: payload.id || null
+  });
+
+  return payload;
 };
 
 export const sendReminderEmail = async ({ to, subject, text, html }) => {

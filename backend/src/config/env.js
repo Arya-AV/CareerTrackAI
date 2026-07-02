@@ -63,6 +63,12 @@ export const env = {
     frontendUrlConfigured: Boolean(process.env.FRONTEND_URL || process.env.CLIENT_URL),
     from: process.env.EMAIL_FROM || "CareerTrack AI <no-reply@careertrack.ai>"
   },
+  resend: {
+    apiKey: process.env.RESEND_API_KEY,
+    apiKeyConfigured: Boolean(process.env.RESEND_API_KEY),
+    from: process.env.EMAIL_FROM || "CareerTrack AI <no-reply@careertrack.ai>",
+    frontendUrlConfigured: Boolean(process.env.FRONTEND_URL || process.env.CLIENT_URL)
+  },
   geminiApiKey: process.env.GEMINI_API_KEY,
   geminiModel: process.env.GEMINI_MODEL || "gemini-2.5-flash",
   google: {
